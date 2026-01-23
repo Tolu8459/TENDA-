@@ -1,6 +1,7 @@
 "use client"; // <--- THIS LINE FIXES THE ERROR
+import { supabase } from '@/lib/supabaseClient';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // Types for your data (Good practice for robustness)
 interface Sale {
@@ -19,15 +20,23 @@ export default function SalesPage() {
     { id: '3', customerName: 'Mama Nkechi', amount: 25000, date: '2023-10-22', status: 'pending' },
   ]);
 
+  useEffect(()=>{
+    const test = async ()=>{
+      const {data,error} = await supabase.auth.getUser()
+      console.log(data,error)
+    }
+    test()
+  },[]) 
+
   // Calculate totals dynamically
   const totalRevenue = sales.reduce((acc, sale) => acc + sale.amount, 0);
   const count = sales.length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500  h-full">
       
       {/* 1. Page Title & Action */}
-      <div className="flex flex-col space-y-4">
+      <div className="flex flex-col space-y-4 ">
         <h2 className="text-2xl font-bold text-slate-900">Sales Dashboard</h2>
         
         {/* Mobile-First "Log Sale" Button */}

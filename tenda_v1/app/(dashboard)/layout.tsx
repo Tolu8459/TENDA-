@@ -1,4 +1,4 @@
-import React from "react";
+"use client"
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -28,7 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* --- MAIN CONTENT (Scrollable) --- */}
       {/* pt-16 to push content below header, pb-24 to push content above footer */}
-      <main className="flex-1 overflow-y-auto pt-16 pb-24 px-4 w-full max-w-md mx-auto">
+      <main className="flex-1 overflow-y-auto pt-16 pb-24 px-4 w-full max-w-md mx-auto bg-slate-300">
         {children}
       </main>
 
