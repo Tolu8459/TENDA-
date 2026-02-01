@@ -1,3 +1,4 @@
+import { mockCustomers } from "@/lib/mock/customers";
 import { createSupabaseServerClient } from "@/lib/supabaseServer";
 import CustomersClient from "./CustomerClient";
 
@@ -15,8 +16,8 @@ export default async function CustomersPage(){
     */
 
     return( 
-        <div>
-    <CustomersClient />
+    <div>
+    <CustomersClient customers={mockCustomers}/>
     </div>
 )
 

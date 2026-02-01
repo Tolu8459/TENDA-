@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabaseServer";
 
 export async function addCustomer(formData:FormData){
     const name = formData.get("name") as string;
-    const number = Number(formData.get("number"))
+    const number = formData.get("number");
     const email = formData.get('email') as string;
 
     const supabase = await createSupabaseServerClient();
