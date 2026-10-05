@@ -1,61 +1,39 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Routes that require an authenticated session.
-const PROTECTED_PREFIXES = [
-  "/dashboard",
-  "/customers",
-  "/sales",
-  "/follow-up",
-  "/settings",
-  "/templates",
-];
+/**
+ * Sends signed-out visitors to /login before a dashboard page renders, so a
+ * typed URL, a bookmark or Back after logout never shows the app.
+ *
+ * This is an optimistic check on the "signed in" cookie set by lib/auth.ts —
+ * the real check is the backend rejecting requests without a valid token, and
+ * AuthGate still verifies the token in the browser.
+ */
+const SESSION_COOKIE = "tenda_session"; // keep in sync with lib/auth.ts
 
-export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    path.startsWith(prefix)
-  );
-
-  // Block unauthenticated access to protected routes.
-  if (!user && isProtected) {
-    const loginUrl = request.nextUrl.clone();
-    loginUrl.pathname = "/login";
-    return NextResponse.redirect(loginUrl);
+export function proxy(request: NextRequest) {
+  if (request.cookies.get(SESSION_COOKIE)?.value) {
+    const res = NextResponse.next();
+    // Don't let the browser keep signed-in pages around after logout.
+    res.headers.set("Cache-Control", "private, no-store");
+    return res;
   }
-
-  return supabaseResponse;
+  const login = request.nextUrl.clone();
+  login.pathname = "/login";
+  login.search = "";
+  login.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
+  return NextResponse.redirect(login);
 }
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/dashboard/:path*",
+    "/customers/:path*",
+    "/sales/:path*",
+    "/ai-assistant/:path*",
+    "/voice-assistant/:path*",
+    "/insights/:path*",
+    "/follow-up/:path*",
+    "/settings/:path*",
+    "/templates/:path*",
   ],
 };

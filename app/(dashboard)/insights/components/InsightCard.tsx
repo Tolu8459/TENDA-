@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { TrendingUp, TrendingDown, Minus, ArrowRight, AlertTriangle, Lightbulb, Users, DollarSign, BarChart2, ShieldAlert } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ArrowRight, Lightbulb, Users, DollarSign, BarChart2, ShieldAlert } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export type InsightCategory = "revenue" | "customers" | "sales" | "risk" | "growth";
@@ -19,6 +19,8 @@ export interface Insight {
   confidence: number; // 0–100
   ctaLabel?: string;
   onCta?: () => void;
+  /** Figures shown in the detail panel. */
+  supporting?: { label: string; value: string; sub?: string }[];
 }
 
 interface InsightCardProps {

@@ -75,8 +75,13 @@ export default function PromptInput({
           <SendHorizonal className="w-4 h-4" />
         </button>
       </div>
+      {value.length > 1500 && (
+        <p className={`text-[11px] text-right mt-1 font-mono ${value.length > 2000 ? "text-red-500" : "text-[#A0AEC0]"}`}>
+          {value.length.toLocaleString()} / 2,000
+        </p>
+      )}
       <p className="text-[10px] text-[#C0C0B8] text-center mt-2">
-        Tenda AI uses your live transaction data · Not financial advice
+        Tenda AI answers from your logged sales · Not financial advice
       </p>
     </div>
   );

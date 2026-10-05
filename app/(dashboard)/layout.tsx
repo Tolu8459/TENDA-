@@ -3,8 +3,10 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Users, Clock, Settings, Plus, Bot, Mic, Sparkles } from "lucide-react";
+import { Home, Users, Clock, Settings, Plus, Bot, Mic, Sparkles, LogOut } from "lucide-react";
 import NotificationPanel from "@/components/NotificationPanel";
+import AuthGate, { useCurrentUser } from "@/components/AuthGate";
+import { initials } from "@/lib/format";
 
 const NAV = [
   { href: "/dashboard", label: "Home", icon: Home },
@@ -17,12 +19,46 @@ const NAV = [
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <AuthGate>
+      <Shell>{children}</Shell>
+    </AuthGate>
+  );
+}
+
+function UserBlock() {
+  const { user, displayName, logout } = useCurrentUser();
+  return (
+    <div className="flex items-center gap-3 px-2 mb-3">
+      <div className="h-9 w-9 flex-shrink-0 bg-gradient-to-br from-[#FFF0E6] to-[#FFD4B3] rounded-full flex items-center justify-center text-xs font-bold text-[#E85D04]">
+        {initials(displayName)}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-[#1A1A1A] truncate">{displayName}</p>
+        <p className="text-[11px] text-[#A0AEC0] truncate">{user.email}</p>
+      </div>
+      <button
+        onClick={() => void logout()}
+        className="p-2 rounded-lg text-[#A0AEC0] hover:text-[#DC2626] hover:bg-red-50 transition-colors"
+        aria-label="Log out"
+        title="Log out"
+      >
+        <LogOut className="w-4 h-4" />
+      </button>
+    </div>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isActive = (href: string) =>
     href === "/dashboard" ? pathname === href : pathname.startsWith(href);
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] text-[#1A1A1A] font-sans lg:flex">
+      <a href="#main-content" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-xl focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:shadow">
+        Skip to content
+      </a>
 
       {/* ===== DESKTOP SIDEBAR (lg and up) ===== */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-[#E8E8E4] z-40">
@@ -49,6 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
         <div className="p-4 border-t border-[#E8E8E4]">
+          <UserBlock />
           <Link
             href="/sales/add-sales"
             className="flex items-center justify-center gap-2 bg-[#E85D04] hover:bg-[#FF8C42] text-white font-semibold rounded-xl h-12 transition-all shadow-[0_4px_20px_rgba(232,93,4,0.25)]"
@@ -65,13 +102,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* ===== MAIN CONTENT ===== */}
-      <div className="flex-1 lg:pl-64">
+      <div className="flex-1 min-w-0 lg:pl-64">
         {/* Desktop top bar */}
         <div className="hidden lg:flex h-20 items-center justify-end px-8 border-b border-[#E8E8E4] bg-white/80 backdrop-blur-md sticky top-0 z-30">
           <NotificationPanel />
         </div>
 
-        <main className="pt-16 pb-24 w-full max-w-[480px] mx-auto lg:max-w-6xl lg:pt-8 lg:px-8 lg:pb-12">
+        <main id="main-content" className="pt-16 pb-24 w-full max-w-[480px] mx-auto lg:max-w-6xl lg:pt-8 lg:px-8 lg:pb-12">
           {children}
         </main>
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import Link from "next/link";
 import { Bot, User } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -9,6 +10,8 @@ export interface TranscriptEntry {
   role: "user" | "assistant";
   text: string;
   time: string;
+  /** Optional follow-up link under an assistant message, e.g. the sale just logged. */
+  link?: { href: string; label: string };
 }
 
 // ─── TranscriptMessage ────────────────────────────────────────────────────────
@@ -43,6 +46,11 @@ function TranscriptMessage({ entry }: { entry: TranscriptEntry }) {
       <div className="flex-1 min-w-0 max-w-[85%] lg:max-w-[75%]">
         <div className="bg-white border border-[#E8E8E4] rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
           <p className="text-sm text-[#2D3748] leading-relaxed">{entry.text}</p>
+          {entry.link && (
+            <Link href={entry.link.href} className="inline-block mt-2 text-xs font-semibold text-[#E85D04] hover:underline">
+              {entry.link.label} →
+            </Link>
+          )}
         </div>
         <p className="text-[10px] text-[#A0AEC0] mt-1 pl-1 flex items-center gap-1">
           <Bot className="w-2.5 h-2.5" />
@@ -88,10 +96,12 @@ export default function VoiceTranscript({
   entries,
   isListening,
 }: VoiceTranscriptProps) {
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Scroll the transcript box only, never the whole page.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [entries, isListening]);
 
   if (entries.length === 0 && !isListening) return null;
@@ -101,12 +111,11 @@ export default function VoiceTranscript({
       <h2 className="text-xs font-semibold uppercase tracking-widest text-[#A0AEC0] mb-3">
         Live transcript
       </h2>
-      <div className="bg-white border border-[#E8E8E4] rounded-2xl p-4 space-y-4 max-h-72 overflow-y-auto">
+      <div ref={scrollRef} className="bg-white border border-[#E8E8E4] rounded-2xl p-4 space-y-4 max-h-72 overflow-y-auto">
         {entries.map((entry) => (
           <TranscriptMessage key={entry.id} entry={entry} />
         ))}
         {isListening && <LiveRow />}
-        <div ref={bottomRef} />
       </div>
     </section>
   );
